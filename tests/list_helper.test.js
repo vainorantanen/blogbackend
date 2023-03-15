@@ -115,7 +115,7 @@ describe('most blogs by author', () => {
 describe('author with most likes', () => {
   test('finds the author with most likes', () => {
     const mostlikedAuthor = {
-      author: "Edsger W. Dijkstra",
+      author: 'Edsger W. Dijkstra',
       likes: 17
     }
     const res = listHelper.mostLikes(listWithMultipleBlogs)
