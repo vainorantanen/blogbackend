@@ -110,6 +110,54 @@ test('if blog doesnt contain url, status code 400 is revieced', async () => {
   //const blogsAtEnd = await helper.blogsInDb()
 })
 
+describe('deletion of a blog', () => {
+  test('there is -1 blogs and deleted content is gone', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
+
+    //console.log("BLOGIT: ", blogsAtStart)
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
+
+    const blogsAtEnd = await helper.blogsInDb()
+
+    expect(blogsAtEnd).toHaveLength(
+      helper.initialBlogs.length - 1
+    )
+
+    const contents = blogsAtEnd.map(r => r.title)
+
+    expect(contents).not.toContain(blogToDelete.title)
+  })
+})
+
+describe('modifying an existing blog', () => {
+  test('modified blog has updated amount of likes', async () => {
+    const upBlog = {
+      title: 'uusi blogi kakkonen',
+      author : 'Korporaatio',
+      url : 'randomurl/morotaas',
+      likes: 11
+    }
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToChange = blogsAtStart[1]
+    await api
+      .put(`/api/blogs/${blogToChange.id}`)
+      .send(upBlog)
+      .expect(200)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    //console.log("put: ", blogsAtEnd)
+    expect(blogsAtEnd).toHaveLength(
+      helper.initialBlogs.length
+    )
+
+    expect(blogsAtEnd[1].likes).toBe(upBlog.likes)
+    expect(blogsAtEnd[1].id).toBe(blogToChange.id)
+  })
+})
+
 afterAll(async () => {
   await mongoose.connection.close()
 })
