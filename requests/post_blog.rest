@@ -1,9 +1,11 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlJhbmVuIHZlbGkiLCJpZCI6IjY0MTRjYWY2MWU3YjA2NGIwZWY0NjY1MyIsImlhdCI6MTY3OTA4NDMyMH0.Ve_CHTHrsztd67_lcF4X4CxaE6TXsxGr99SWs1kEY9c
 
 {
-    "title": "uusi blogi",
-    "author": "rauno",
-    "url": "randomurl/morovaan",
-    "likes": 10
+    "title": "Äänioikeus",
+    "author": "juuuu",
+    "url": "randomurl/morovaaaaa.com",
+    "likes": 120,
+    "userId": "6414caf61e7b064b0ef46653"
 }
