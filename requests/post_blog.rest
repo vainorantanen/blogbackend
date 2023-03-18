@@ -1,11 +1,10 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlJhbmVuIHZlbGkiLCJpZCI6IjY0MTRjYWY2MWU3YjA2NGIwZWY0NjY1MyIsImlhdCI6MTY3OTA4NDMyMH0.Ve_CHTHrsztd67_lcF4X4CxaE6TXsxGr99SWs1kEY9c
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlJhdW5vIiwiaWQiOiI2NDE1YTMwNDgzOTAyYWZmMmI4YzE0ZjgiLCJpYXQiOjE2NzkxMzk2NDQsImV4cCI6MTY3OTE0MzI0NH0.IVhDlabjzblIX6kQINnYhvuhmccELlSeKm5CrTA4HzU
 
 {
-    "title": "Äänioikeus",
-    "author": "juuuu",
-    "url": "randomurl/morovaaaaa.com",
-    "likes": 120,
-    "userId": "6414caf61e7b064b0ef46653"
+    "title": "Uutiset talouspolitiikasta",
+    "author": "Rauno",
+    "url": "randomurl/morovaaaaa.com/uutiset",
+    "likes": 11
 }

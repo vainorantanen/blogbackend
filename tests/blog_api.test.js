@@ -9,44 +9,10 @@ const api = supertest(app)
 
 const Blog = require('../models/blog')
 
-
-beforeEach(async () => {
-  await User.deleteMany({})
-
-  const passwordHash = await bcrypt.hash('password', 10)
-  const user = new User({
-    username: 'root',
-    name: 'adminko',
-    blogs: [],
-    passwordHash
-  })
-
-  await user.save()
-})
-
 beforeEach(async () => {
   await Blog.deleteMany({})
-
-  const users = await User.find({})
-  const user = users[0]
-  const id = users[0]._id
-
-  const blogObject = helper.initialBlogs
-    .map(blog => new Blog({
-      title: blog.title,
-      author: blog.author,
-      url: blog.url,
-      user: id.toString(),
-      likes: blog.likes ? blog.likes : 0
-    }))
-  const promiseArray = blogObject.map(blog => {
-    blog.save()
-    user.blogs = user.blogs.concat(blog._id)
-  })
-  await Promise.all(promiseArray)
-  await user.save()
+  await Blog.insertMany(helper.initialBlogs)
 })
-
 
 
 test('blogs are returned as json', async () => {
@@ -83,7 +49,7 @@ describe('Adding a blog:', () => {
 
     token = `bearer ${loginUser.body.token}`
 
-    console.log("TOKENI", token)
+    //console.log("TOKENI", token)
   })
 
   test('valid blog can be added to db', async () => {
@@ -95,7 +61,7 @@ describe('Adding a blog:', () => {
       likes: 11,
     }
 
-    console.log("Tokeni uudestaa", token)
+    //console.log("Tokeni uudestaa", token)
 
     await api
       .post('/api/blogs')
