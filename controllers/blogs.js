@@ -3,7 +3,7 @@ const Blog = require('../models/blog')
 const User = require('../models/user')
 const jwt = require('jsonwebtoken')
 const { tokenExtractor } = require('../utils/middleware')
-
+const { userExtractor } = require('../utils/middleware')
 
 
 blogsRouter.get('/', async (request, response) => {
@@ -13,7 +13,7 @@ blogsRouter.get('/', async (request, response) => {
 
 blogsRouter.post('/', async (request, response) => {
   const body = request.body
-
+  //console.log("RPOST:", request)
   const user = request.user
 
   //console.log("user: ", user)
@@ -38,21 +38,19 @@ blogsRouter.post('/', async (request, response) => {
 })
 
 blogsRouter.delete('/:id', async (request, response) => {
-  const userWithToken = request.user
   const blog = await Blog.findById(request.params.id)
-  /*
-  console.log("user", userWithToken)
-  console.log("blog", blog)
-  console.log("blog.user", blog.user.toString())
-  console.log("userWithToken", userWithToken._id.toString())
-  */
-  if ( blog.user.toString() === userWithToken._id.toString() ) {
-    await Blog.findByIdAndRemove(request.params.id)
-    response.status(204).end()
-  } else {
-    return response.status(401).json({ error: 'user not authored to delete this' })
+  //console.log("R", request)
+  const user = request.user
+  console.log(user)
+  if (!user || blog.user.toString() !== user.id.toString()) {
+    return response.status(401).json({ error: 'operation not permitted' })
   }
 
+  user.blogs = user.blogs.filter(b => b.toString() !== blog.id.toString() )
+
+  await user.save()
+  await blog.remove()
+  response.status(204).end()
 })
 
 blogsRouter.put('/:id', async (request, response) => {

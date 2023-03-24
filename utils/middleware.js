@@ -35,32 +35,31 @@ const errorHandler = (error, request, response, next) => {
   next(error)
 }
 
-const tokenExtractor = (request, response, next) => {
-  // tokenin ekstraktoiva koodi
+const getTokenFrom = request => {
   const authorization = request.get('authorization')
-  if (authorization && authorization.startsWith('Bearer ')) {
-    const tok = authorization.replace('Bearer ', '')
-    request.token = tok
-    //console.log("TOKENI", request.token)
-    //return request.token
-  } else {
-    request.token = null
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    return authorization.substring(7)
   }
+  return null
+}
 
+const tokenExtractor = (request, response, next) => {
+  request.token = getTokenFrom(request)
   next()
 }
 
 const userExtractor = async (request, response, next) => {
-  if (!request.token) {
-    request.user = null
-  } else {
-    const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  const token = getTokenFrom(request)
+
+  if (token) {
+    const decodedToken = jwt.verify(token, process.env.SECRET)
     if (!decodedToken.id) {
-      request.user = null
-    } else {
-      request.user = await User.findById(decodedToken.id)
+      return response.status(401).json({ error: 'token invalid' })
     }
+
+    request.user = await User.findById(decodedToken.id)
   }
+
   next()
 }
 
