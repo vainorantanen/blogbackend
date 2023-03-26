@@ -1,70 +1,80 @@
-const blogsRouter = require('express').Router()
-const Blog = require('../models/blog')
-const User = require('../models/user')
-const jwt = require('jsonwebtoken')
-const { tokenExtractor } = require('../utils/middleware')
-const { userExtractor } = require('../utils/middleware')
+const router = require("express").Router();
+const Blog = require("../models/blog");
 
+const { userExtractor } = require("../utils/middleware");
 
-blogsRouter.get('/', async (request, response) => {
-  const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
-  response.json(blogs)
-})
+router.get("/", async (request, response) => {
+  const blogs = await Blog.find({}).populate("user", { username: 1, name: 1 });
 
-blogsRouter.post('/', async (request, response) => {
-  const body = request.body
-  //console.log("RPOST:", request)
-  const user = request.user
+  response.json(blogs);
+});
 
-  //console.log("user: ", user)
+router.post("/", userExtractor, async (request, response) => {
+  const { title, author, url, likes } = request.body;
+  const blog = new Blog({
+    title,
+    author,
+    url,
+    likes: likes ? likes : 0,
+  });
+
+  const user = request.user;
 
   if (!user) {
-    return response.status(401).json({ error: 'token is missing or invalid' })
+    return response.status(401).json({ error: "operation not permitted" });
   }
 
-  const blog = new Blog({
-    title: body.title,
-    author: body.author,
-    url: body.url,
-    likes: body.likes || 0,
-    user: user._id
-  })
+  blog.user = user._id;
 
-  const savedBlog = await blog.save()
-  user.blogs = user.blogs.concat(savedBlog._id)
-  await user.save()
-  response.json(savedBlog)
+  let createdBlog = await blog.save();
 
-})
+  user.blogs = user.blogs.concat(createdBlog._id);
+  await user.save();
 
-blogsRouter.delete('/:id', async (request, response) => {
-  const blog = await Blog.findById(request.params.id)
-  //console.log("R", request)
-  const user = request.user
-  console.log(user)
+  createdBlog = await Blog.findById(createdBlog._id).populate("user");
+
+  response.status(201).json(createdBlog);
+});
+
+router.put("/:id", async (request, response) => {
+  const { title, url, author, likes } = request.body;
+
+  let updatedBlog = await Blog.findByIdAndUpdate(
+    request.params.id,
+    { title, url, author, likes },
+    { new: true }
+  );
+
+  updatedBlog = await Blog.findById(updatedBlog._id).populate("user");
+
+  response.json(updatedBlog);
+});
+
+router.delete("/:id", userExtractor, async (request, response) => {
+  const blog = await Blog.findById(request.params.id);
+
+  const user = request.user;
+
   if (!user || blog.user.toString() !== user.id.toString()) {
-    return response.status(401).json({ error: 'operation not permitted' })
+    return response.status(401).json({ error: "operation not permitted" });
   }
 
-  user.blogs = user.blogs.filter(b => b.toString() !== blog.id.toString() )
+  user.blogs = user.blogs.filter((b) => b.toString() !== blog.id.toString());
 
-  await user.save()
-  await blog.remove()
-  response.status(204).end()
-})
+  await user.save();
+  await blog.remove();
 
-blogsRouter.put('/:id', async (request, response) => {
-  const body = request.body
+  response.status(204).end();
+});
 
-  const blog = {
-    title: body.title,
-    author: body.author,
-    url: body.url,
-    likes: body.likes || 0
-  }
+router.post("/:id/comments", async (request, response) => {
+  const blog = await Blog.findById(request.params.id);
+  //console.log(blog)
+  const { content } = request.body
+  //console.log(content)
+  blog.comments = blog.comments.concat(content);
+  await blog.save()
+  response.status(201)
+});
 
-  const updBlogi = await Blog.findByIdAndUpdate(request.params.id, blog, { new : true })
-  response.json(updBlogi)
-})
-
-module.exports = blogsRouter
+module.exports = router;

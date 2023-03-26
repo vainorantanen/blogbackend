@@ -1,112 +1,67 @@
-const dummy = (blogs) => {
-  return 1
-}
+const { groupBy } = require("lodash");
+
+const dummy = (blogs) => 1;
 
 const totalLikes = (blogs) => {
-  let sum = 0
-  for (let i = 0; i < blogs.length; i++) {
-    sum += blogs[i].likes
-  }
-  return sum
-}
+  return blogs.reduce((sum, blog) => blog.likes + sum, 0);
+};
 
 const favoriteBlog = (blogs) => {
-  let fav = {
-    title: '',
-    author: '',
-    likes: 0
+  if (blogs.length === 0) {
+    return undefined;
   }
-  for (let i = 1; i < blogs.length; i++) {
-    if (blogs[i].likes > fav.likes) {
-      fav.title = blogs[i].title
-      fav.author = blogs[i].author
-      fav.likes = blogs[i].likes
-    }
-  }
-  return fav
-}
+
+  const { title, author, url, likes } = blogs.sort(
+    (b1, b2) => b2.likes - b1.likes
+  )[0];
+
+  return { title, author, url, likes };
+};
 
 const mostBlogs = (blogs) => {
-  const authors = []
-  for (let i = 0; i < blogs.length; i++) {
-    authors.push(blogs[i].author)
+  if (blogs.length === 0) {
+    return undefined;
   }
 
-  // valmis lista jossa kaikki authorit
-  const indAuth = []
-  for (let j = 0; j < authors.length; j++) {
-    if (!indAuth.includes(authors[j])) {
-      indAuth.push(authors[j])
-    }
-  }
-  // toimii! console.log(indAuth)
-  // indAuth = [ 'Michael Chan', 'Edsger W. Dijkstra', 'Robert C. Martin' ]
-  const finalAuth = []
-  for (let k = 0; k < indAuth.length; k++) {
-    const obj = {
-      author: indAuth[k],
-      blogs: 0,
-    }
-    for (let b = 0; b < blogs.length; b++) {
-      if (blogs[b].author === obj.author) {
-        obj.blogs +=1
-      }
-    }
-    finalAuth.push(obj)
-  }
-  //console.log(finalAuth)
-  let res = finalAuth[0]
-  for (let y = 1; y < finalAuth.length; y++) {
-    if (finalAuth[y].blogs > res.blogs) {
-      res = finalAuth[y]
-    }
-  }
-  return res
+  const blogsByAuthor = groupBy(blogs, (blog) => blog.author);
 
-}
+  const authorBlogs = Object.entries(blogsByAuthor).reduce(
+    (array, [author, blogList]) => {
+      return array.concat({
+        author,
+        blogs: blogList.length,
+      });
+    },
+    []
+  );
+
+  return authorBlogs.sort((e1, e2) => e2.blogs - e1.blogs)[0];
+};
 
 const mostLikes = (blogs) => {
-  const authors = []
-  for (let i = 0; i < blogs.length; i++) {
-    authors.push(blogs[i].author)
+  if (blogs.length === 0) {
+    return undefined;
   }
 
-  // valmis lista jossa kaikki authorit
-  const indAuth = []
-  for (let j = 0; j < authors.length; j++) {
-    if (!indAuth.includes(authors[j])) {
-      indAuth.push(authors[j])
-    }
-  }
-  //[ 'Michael Chan', 'Edsger W. Dijkstra', 'Robert C. Martin' ]
+  const blogsByAuthor = groupBy(blogs, (blog) => blog.author);
 
-  const finalAuth = []
-  for (let k = 0; k < indAuth.length; k++) {
-    const obj = {
-      author: indAuth[k],
-      likes: 0,
-    }
-    for (let b = 0; b < blogs.length; b++) {
-      if (blogs[b].author === obj.author) {
-        obj.likes += blogs[b].likes
-      }
-    }
-    finalAuth.push(obj)
-  }
+  const authorBlogs = Object.entries(blogsByAuthor).reduce(
+    (array, [author, blogList]) => {
+      return array.concat({
+        author,
+        likes: blogList.reduce((sum, blog) => sum + blog.likes, 0),
+      });
+    },
+    []
+  );
 
-  let res = finalAuth[0]
-  for (let y = 1; y < finalAuth.length; y++) {
-    if (finalAuth[y].likes > res.likes) {
-      res = finalAuth[y]
-    }
-  }
-  return res
-}
+  return authorBlogs.sort((e1, e2) => e2.likes - e1.likes)[0];
+};
 
 module.exports = {
   dummy,
   totalLikes,
-  mostLikes,
+  favoriteBlog,
   mostBlogs,
-  favoriteBlog
-}
+  mostLikes,
+};
